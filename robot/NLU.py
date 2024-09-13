@@ -194,6 +194,110 @@ class UnitNLU(AbstractNLU):
         return unit.getSay(parsed, intent)
 
 
+class TongyiNLU(AbstractNLU):
+    """
+    阿里 通义千问api 进行NLU.
+    """
+
+    SLUG = "tongyi"
+
+    def __init__(self):
+        super(self.__class__, self).__init__()
+
+    @classmethod
+    def get_config(cls):
+        """
+        阿里 通义千问的配置
+
+        无需配置，所以返回 {}
+        """
+        return {}
+
+    def parse(self, query, **args):
+        """
+        使用阿里 通义千问 进行 NLU 解析
+
+        :param query: 用户的指令字符串
+        :param **args: 通义千问 的相关参数
+            - service_id: 通义千问 的 service_id
+            - api_key: 通义千问 apk_key
+            - secret_key: 通义千问 secret_key
+        :returns: 通义千问 解析结果。如果解析失败，返回 None
+        """
+        if (
+            "service_id" not in args
+            or "api_key" not in args
+            or "secret_key" not in args
+        ):
+            logger.critical(f"{self.SLUG} NLU 失败：参数错误！", stack_info=True)
+            return None
+        return unit.getUnit(
+            query, args["service_id"], args["api_key"], args["secret_key"]
+        )
+
+    def getIntent(self, parsed):
+        """
+        提取意图
+
+        :param parsed: 解析结果
+        :returns: 意图数组
+        """
+        return unit.getIntent(parsed)
+
+    def hasIntent(self, parsed, intent):
+        """
+        判断是否包含某个意图
+
+        :param parsed: UNIT 解析结果
+        :param intent: 意图的名称
+        :returns: True: 包含; False: 不包含
+        """
+        return unit.hasIntent(parsed, intent)
+
+    def getSlots(self, parsed, intent):
+        """
+        提取某个意图的所有词槽
+
+        :param parsed: UNIT 解析结果
+        :param intent: 意图的名称
+        :returns: 词槽列表。你可以通过 name 属性筛选词槽，
+        再通过 normalized_word 属性取出相应的值
+        """
+        return unit.getSlots(parsed, intent)
+
+    def getSlotWords(self, parsed, intent, name):
+        """
+        找出命中某个词槽的内容
+
+        :param parsed: UNIT 解析结果
+        :param intent: 意图的名称
+        :param name: 词槽名
+        :returns: 命中该词槽的值的列表。
+        """
+        return unit.getSlotWords(parsed, intent, name)
+
+    def getSlotOriginalWords(self, parsed, intent, name):
+        """
+        找出命中某个词槽的原始内容
+
+        :param parsed: 解析结果
+        :param intent: 意图的名称
+        :param name: 词槽名
+        :returns: 命中该词槽的值的列表。
+        """
+        return unit.getSlotOriginalWords(parsed, intent, name)
+
+    def getSay(self, parsed, intent):
+        """
+        提取 的回复文本
+
+        :param parsed: UNIT 解析结果
+        :param intent: 意图的名称
+        :returns: UNIT 的回复文本
+        """
+        return unit.getSay(parsed, intent)
+
+
 def get_engine_by_slug(slug=None):
     """
     Returns:
