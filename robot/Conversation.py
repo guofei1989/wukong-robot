@@ -444,3 +444,48 @@ class Conversation(object):
             self.interrupt()
         self.player = Player.SoxPlayer()
         self.player.play(src, delete=delete, onCompleted=onCompleted)
+
+
+class ConversationForDoss(Conversation):
+    def __init__(self, profiling=False):
+        super().__init__(profiling)
+
+    def doResponse(self, query, UUID="", onSay=None, onStream=None):
+        """重写响应指令
+
+        Args:
+            query (_type_): _description_
+            UUID (str, optional): _description_. Defaults to "".
+            onSay (_type_, optional): _description_. Defaults to None.
+            onStream (_type_, optional): _description_. Defaults to None.
+        """
+        statistic.report(1)
+        self.interrupt()
+        self.appendHistory(0, query, UUID)
+
+        if onSay:
+            self.onSay = onSay
+
+        if onStream:
+            self.onStream = onStream
+
+        if query.strip() == "":
+            self.pardon()
+            return
+
+        lastImmersiveMode = self.immersiveMode
+
+        parsed = self.doParse(query)
+
+        action = parsed.get("action")  # 动作
+        objection = parsed.get("object")  # 动作对象
+        if not action or not objection:
+            self.pardon()
+            return
+
+        # TODO：先阶段默认为播放mp3，因此action无关
+        if action not in ["播放", "演示", "展示", "分析", "介绍"]:
+            self.pardon()
+            return
+
+        # TODO: similarities计算相似度

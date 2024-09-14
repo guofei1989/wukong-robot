@@ -12,6 +12,7 @@ import os
 from http import HTTPStatus
 import json
 import re
+import logging
 
 import dashscope
 from dotenv import load_dotenv
@@ -21,12 +22,23 @@ load_dotenv("../..")
 from openai import OpenAI
 import os
 
+logger = logging.getLogger(__name__)
 
-def get_response(query: str):
+
+def get_token():
+    api_key = (
+        os.getenv("TONGYI_API_KEY"),
+    )  # 如果您没有配置环境变量,请在此处用您的API Key进行替换
+
+    if api_key is None:
+        logger.critical("TONGYI_API_KEY is not set")
+    return api_key
+
+
+def getTongyi(query: str):
+    api_key = get_token()
     client = OpenAI(
-        api_key=os.getenv(
-            "TONGYI_API_KEY"
-        ),  # 如果您没有配置环境变量,请在此处用您的API Key进行替换
+        api_key=api_key,
         base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",  # 填写DashScope服务的base_url
     )
     completion = client.chat.completions.create(
@@ -64,6 +76,10 @@ def get_response(query: str):
         return {"action": "", "object": ""}
 
 
+
+
+
+
 if __name__ == "__main__":
     query = "打开百度"
-    print(get_response(query))
+    print(getTongyi(query))

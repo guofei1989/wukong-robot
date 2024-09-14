@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from .sdk import unit
+from .sdk import unit, tongyi
 from robot import logging
 from abc import ABCMeta, abstractmethod
 
@@ -120,13 +120,6 @@ class UnitNLU(AbstractNLU):
             - secret_key: UNIT secret_key
         :returns: UNIT 解析结果。如果解析失败，返回 None
         """
-        if (
-            "service_id" not in args
-            or "api_key" not in args
-            or "secret_key" not in args
-        ):
-            logger.critical(f"{self.SLUG} NLU 失败：参数错误！", stack_info=True)
-            return None
         return unit.getUnit(
             query, args["service_id"], args["api_key"], args["secret_key"]
         )
@@ -209,7 +202,7 @@ class TongyiNLU(AbstractNLU):
         """
         阿里 通义千问的配置
 
-        无需配置，所以返回 {}
+        除了API_KEY外无需额外配置，直接返回 {}
         """
         return {}
 
@@ -224,16 +217,7 @@ class TongyiNLU(AbstractNLU):
             - secret_key: 通义千问 secret_key
         :returns: 通义千问 解析结果。如果解析失败，返回 None
         """
-        if (
-            "service_id" not in args
-            or "api_key" not in args
-            or "secret_key" not in args
-        ):
-            logger.critical(f"{self.SLUG} NLU 失败：参数错误！", stack_info=True)
-            return None
-        return unit.getUnit(
-            query, args["service_id"], args["api_key"], args["secret_key"]
-        )
+        return tongyi.getTongyi(query)
 
     def getIntent(self, parsed):
         """
@@ -242,7 +226,7 @@ class TongyiNLU(AbstractNLU):
         :param parsed: 解析结果
         :returns: 意图数组
         """
-        return unit.getIntent(parsed)
+        pass
 
     def hasIntent(self, parsed, intent):
         """
@@ -252,7 +236,7 @@ class TongyiNLU(AbstractNLU):
         :param intent: 意图的名称
         :returns: True: 包含; False: 不包含
         """
-        return unit.hasIntent(parsed, intent)
+        pass
 
     def getSlots(self, parsed, intent):
         """
@@ -263,7 +247,7 @@ class TongyiNLU(AbstractNLU):
         :returns: 词槽列表。你可以通过 name 属性筛选词槽，
         再通过 normalized_word 属性取出相应的值
         """
-        return unit.getSlots(parsed, intent)
+        pass
 
     def getSlotWords(self, parsed, intent, name):
         """
@@ -274,7 +258,7 @@ class TongyiNLU(AbstractNLU):
         :param name: 词槽名
         :returns: 命中该词槽的值的列表。
         """
-        return unit.getSlotWords(parsed, intent, name)
+        pass
 
     def getSlotOriginalWords(self, parsed, intent, name):
         """
@@ -285,7 +269,7 @@ class TongyiNLU(AbstractNLU):
         :param name: 词槽名
         :returns: 命中该词槽的值的列表。
         """
-        return unit.getSlotOriginalWords(parsed, intent, name)
+        pass
 
     def getSay(self, parsed, intent):
         """
@@ -295,7 +279,7 @@ class TongyiNLU(AbstractNLU):
         :param intent: 意图的名称
         :returns: UNIT 的回复文本
         """
-        return unit.getSay(parsed, intent)
+        pass
 
 
 def get_engine_by_slug(slug=None):
