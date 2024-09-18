@@ -8,6 +8,7 @@ import re
 import os
 import threading
 import traceback
+import subprocess
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -28,6 +29,7 @@ from robot import (
     statistic,
     TTS,
     utils,
+    similarity,
 )
 
 
@@ -447,8 +449,61 @@ class Conversation(object):
 
 
 class ConversationForDoss(Conversation):
-    def __init__(self, profiling=False):
+
+    doss_ppt_titles = [
+        "单船首页",
+        "能效报表",
+        "能效排放监测",
+        "航速优化",
+        "污底评估",
+        "优化卡片集",
+        "纵倾优化",
+        "碳排放",
+        "智能机舱",
+        "智能能效首页",
+    ]
+    title_to_mp3 = {
+        "单船首页": "单船首页-2.mp3",
+        "能效报表": "能效-报表.mp3",
+        "能效排放监测": "能效-排放监测.mp3",
+        "航速优化": "首页-航速优化卡片.mp3",
+        "污底评估": "首页-污底评估卡片.mp3",
+        "优化卡片集": "首页-优化卡片集.mp3",
+        "纵倾优化": "首页-纵倾优化卡片.mp3",
+        "碳排放": "碳排放-船队首页-1.mp3",
+        "智能机舱": "智能机舱.mp3",
+        "智能能效首页": "智能能效首页.mp3",
+    }
+
+    def __init__(self, profiling=False, similarity_threshold=0.6):
         super().__init__(profiling)
+        self.similarity_engine = similarity.SequenceMatcherSimilarity(
+            self.doss_ppt_titles
+        )
+        self.similarity_threshold = similarity_threshold
+
+    def mp3_player(self, mp3_path):
+        pt = utils.get_platform()
+        assert pt in ["Linux", "Windows", "Mac"], "Unsupported platform"
+
+        if pt == "Linux":
+            # 使用mpg321在后台播放MP3文件
+            # -q 选项使mpg321安静模式运行，不输出播放信息
+            # & 将命令置于后台运行
+            command = ["mplayer", "-quiet", mp3_path]
+
+        elif pt == "Windows":
+            command = ["ffplay", "-hide_banner", "-nodisp", mp3_path]
+
+        elif pt == "Mac":
+            command = ["afplay", mp3_path]
+
+        try:
+            subprocess.Popen(
+                command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+            )
+        except Exception as e:
+            print(f"Please install {command[0]}", e)
 
     def doResponse(self, query, UUID="", onSay=None, onStream=None):
         """重写响应指令
@@ -488,4 +543,17 @@ class ConversationForDoss(Conversation):
             self.pardon()
             return
 
-        # TODO: similarities计算相似度
+        objection_hit = self.similarity_engine.most_similar(objection, topn=1)[0][
+            0
+        ]  # TODO: 这里只取Top-1
+        corpus_hit = objection_hit["corpus_doc"]
+        corpus_score = objection_hit["score"]
+
+        if corpus_score >= self.similarity_threshold:
+            mp3_path = os.path.join(
+                "../corpus/ppt_mp3/woman_en", self.title_to_mp3[corpus_hit]
+            )
+            self.mp3_player(mp3_path)
+
+        else:
+            pass

@@ -15,6 +15,7 @@ from robot import logging
 from pydub import AudioSegment
 from pytz import timezone
 import _thread as thread
+import platform
 
 import smtplib
 from email.mime.text import MIMEText
@@ -24,6 +25,22 @@ logger = logging.getLogger(__name__)
 
 do_not_bother = False
 is_recordable = True
+
+
+def get_platform():
+    # 获取操作系统名称
+    os_name = platform.system()
+
+    if os_name == "Windows":
+        return "Windows"
+    elif os_name == "Linux":
+        return "Linux"
+    elif os_name == "Darwin":
+        # Darwin是Mac OS X和macOS的内核名称
+        return "Mac"
+    else:
+        # 可能是其他类型的Unix系统
+        return f"Unknown OS: {os_name}"
 
 
 def sendEmail(

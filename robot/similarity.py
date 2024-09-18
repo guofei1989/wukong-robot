@@ -9,10 +9,7 @@ Copyright (c) 2024 by SDARI, All Rights Reserved.
 """
 
 from typing import List, Union, Dict
-import logging
 from difflib import SequenceMatcher
-
-logger = logging.getLogger(__name__)
 
 
 def try_divide(x, y, val=0.0):
@@ -172,7 +169,6 @@ class SameCharsSimilarity(SimilarityABC):
         if not corpus_new:
             return
         self.corpus.update(corpus_new)
-        logger.debug(f"Add {len(corpus_new)} docs, total: {len(self.corpus)}")
 
     def similarity(self, a: Union[str, List[str]], b: Union[str, List[str]]):
         """
@@ -271,7 +267,6 @@ class SequenceMatcherSimilarity(SimilarityABC):
         if not corpus_new:
             return
         self.corpus.update(corpus_new)
-        logger.debug(f"Add {len(corpus_new)} docs, total: {len(self.corpus)}")
 
     def similarity(
         self,
@@ -332,3 +327,10 @@ class SequenceMatcherSimilarity(SimilarityABC):
             q_res = sorted(q_res, key=lambda x: x["score"], reverse=True)[:topn]
             result.append(q_res)
         return result
+
+
+if __name__ == "__main__":
+    tool = SequenceMatcherSimilarity()
+    tool.add_corpus(["首页", "操纵性", "快速性", "总结"])
+    results = tool.most_similar("xxx", topn=3)
+    print(results)
