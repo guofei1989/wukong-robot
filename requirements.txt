@@ -24,3 +24,4 @@ funasr_onnx
 dashscope
 openai
 Levenshtein
+python-dotenv

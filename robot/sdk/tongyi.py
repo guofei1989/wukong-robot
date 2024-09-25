@@ -26,9 +26,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_token():
-    api_key = (
-        os.getenv("TONGYI_API_KEY"),
-    )  # 如果您没有配置环境变量,请在此处用您的API Key进行替换
+    api_key = os.getenv("TONGYI_API_KEY")   # 如果您没有配置环境变量,请在此处用您的API Key进行替换
 
     if api_key is None:
         logger.critical("TONGYI_API_KEY is not set")
@@ -71,6 +69,7 @@ def getTongyi(query: str):
         completion = completion.model_dump_json()
         content = json.loads(completion).get("choices")[0].get("message").get("content")
         content = json.loads(re.search(r"{.+}", content).group(0))
+        print(content)
         return content
     except Exception as e:
         return {"action": "", "object": ""}

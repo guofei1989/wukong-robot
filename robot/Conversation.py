@@ -11,7 +11,7 @@ import traceback
 import subprocess
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
-
+import pathlib
 from snowboy import snowboydecoder
 
 from robot.LifeCycleHandler import LifeCycleHandler
@@ -530,7 +530,9 @@ class ConversationForDoss(Conversation):
 
         lastImmersiveMode = self.immersiveMode
 
-        parsed = self.doParse(query)
+        parsed = self.doParse(query)           # TODO： 通义千问的解析并不稳定，如播放首页，有时能抽取成功，有时不可以
+                                               # TODO： 切换为阿里的ASR，部分ASR为同音字，是否考虑同音匹配？
+        print(f"query为：{query}, 解析结果为：{parsed}")
 
         action = parsed.get("action")  # 动作
         objection = parsed.get("object")  # 动作对象
@@ -548,12 +550,14 @@ class ConversationForDoss(Conversation):
         ]  # TODO: 这里只取Top-1
         corpus_hit = objection_hit["corpus_doc"]
         corpus_score = objection_hit["score"]
+        project_dirname = pathlib.Path(__file__).parent.parent
 
         if corpus_score >= self.similarity_threshold:
-            mp3_path = os.path.join(
-                "../corpus/ppt_mp3/woman_en", self.title_to_mp3[corpus_hit]
-            )
-            self.mp3_player(mp3_path)
+            mp3_path = f"corpus/ppt_mp3/woman_en/{self.title_to_mp3[corpus_hit]}"
+            mp3_abs_path = project_dirname / mp3_path
+            self.mp3_player(str(mp3_abs_path))        # TODO：播放时，无法通过Hi Doss打断进程
 
         else:
-            pass
+            self.say("抱歉，没找到您想要演示的材料，您可以换一种表达方式吗？", cache=True)
+
+

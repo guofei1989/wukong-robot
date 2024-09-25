@@ -8,7 +8,7 @@ import hashlib
 import urllib3
 
 from robot.Updater import Updater
-from robot.Conversation import Conversation
+from robot.Conversation import ConversationForDoss as Conversation
 from robot.LifeCycleHandler import LifeCycleHandler
 
 from robot import config, utils, constants, logging, detector
